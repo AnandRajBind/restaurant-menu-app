@@ -11,41 +11,29 @@ const router = Router();
  * /health:
  *   get:
  *     summary: System Health Check Endpoint
- *     description: Returns the operational status of the API service and MongoDB database connection.
- *     tags:
- *       - System
+ *     description: Returns operational status, uptime, system memory metrics, and MongoDB connection state.
+ *     tags: [System]
  *     responses:
  *       200:
- *         description: Health check successful
+ *         description: System is operational and healthy
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 statusCode:
- *                   type: integer
- *                   example: 200
- *                 message:
- *                   type: string
- *                   example: Server is healthy
- *                 data:
- *                   type: object
- *                   properties:
- *                     status:
- *                       type: string
- *                       example: UP
- *                     uptime:
- *                       type: number
- *                       example: 124.5
- *                     timestamp:
- *                       type: string
- *                       example: 2026-08-05T20:05:00.000Z
- *                     database:
- *                       type: string
- *                       example: connected
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Server is healthy"
+ *               data:
+ *                 status: "UP"
+ *                 uptime: 124.5
+ *                 timestamp: "2026-08-06T05:00:00.000Z"
+ *                 environment: "development"
+ *                 database: "connected"
+ *                 memoryUsage:
+ *                   rss: 45000000
+ *                   heapTotal: 30000000
+ *                   heapUsed: 22000000
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get(
   '/health',

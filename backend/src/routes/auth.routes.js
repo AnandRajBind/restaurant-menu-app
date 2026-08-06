@@ -36,6 +36,14 @@ const router = Router();
  *         updatedAt:
  *           type: string
  *           example: "2026-08-06T00:00:00.000Z"
+ *     AuthPayload:
+ *       type: object
+ *       properties:
+ *         user:
+ *           $ref: '#/components/schemas/User'
+ *         accessToken:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *     AuthResponse:
  *       type: object
  *       properties:
@@ -47,15 +55,9 @@ const router = Router();
  *           example: 200
  *         message:
  *           type: string
- *           example: "User logged in successfully"
+ *           example: "User authenticated successfully"
  *         data:
- *           type: object
- *           properties:
- *             user:
- *               $ref: '#/components/schemas/User'
- *             accessToken:
- *               type: string
- *               example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *           $ref: '#/components/schemas/AuthPayload'
  */
 
 /**
@@ -63,6 +65,7 @@ const router = Router();
  * /auth/register:
  *   post:
  *     summary: Register a new user
+ *     description: Creates a new user account with validated credentials and returns access token & sets HTTP-only refresh cookie.
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -95,10 +98,27 @@ const router = Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
+ *             example:
+ *               success: true
+ *               statusCode: 201
+ *               message: "User registered successfully"
+ *               data:
+ *                 user:
+ *                   _id: "64b8f1a2c9e4a80012a3b4c5"
+ *                   name: "John Doe"
+ *                   email: "john@example.com"
+ *                   role: "User"
+ *                   createdAt: "2026-08-06T00:00:00.000Z"
+ *                   updatedAt: "2026-08-06T00:00:00.000Z"
+ *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       400:
- *         description: Validation error or weak password
+ *         $ref: '#/components/responses/BadRequest'
  *       409:
- *         description: Email already exists
+ *         $ref: '#/components/responses/Conflict'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/register', registerValidator, validate, authController.register);
 
@@ -107,6 +127,7 @@ router.post('/register', registerValidator, validate, authController.register);
  * /auth/login:
  *   post:
  *     summary: Authenticate user & obtain access token
+ *     description: Validates user email & password, returning JWT access token and setting HTTP-only refresh token cookie.
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -129,8 +150,27 @@ router.post('/register', registerValidator, validate, authController.register);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/AuthResponse'
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "User logged in successfully"
+ *               data:
+ *                 user:
+ *                   _id: "64b8f1a2c9e4a80012a3b4c5"
+ *                   name: "John Doe"
+ *                   email: "john@example.com"
+ *                   role: "User"
+ *                   createdAt: "2026-08-06T00:00:00.000Z"
+ *                   updatedAt: "2026-08-06T00:00:00.000Z"
+ *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
- *         description: Invalid credentials
+ *         $ref: '#/components/responses/Unauthorized'
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/login', loginValidator, validate, authController.login);
 
@@ -139,6 +179,7 @@ router.post('/login', loginValidator, validate, authController.login);
  * /auth/refresh-token:
  *   post:
  *     summary: Refresh JWT Access Token
+ *     description: Exchanges a valid Refresh Token (from cookie or JSON body) for a new Access Token and rotates the Refresh Token.
  *     tags: [Authentication]
  *     requestBody:
  *       required: false
@@ -153,8 +194,18 @@ router.post('/login', loginValidator, validate, authController.login);
  *     responses:
  *       200:
  *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Access token refreshed successfully"
+ *               data:
+ *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       401:
- *         description: Invalid or expired refresh token
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post(
   '/refresh-token',
@@ -168,14 +219,24 @@ router.post(
  * /auth/logout:
  *   post:
  *     summary: Log out user & invalidate refresh token
+ *     description: Revokes stored refresh token in database and clears HTTP-only refresh token cookie.
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logged out successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Logged out successfully"
+ *               data: null
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/logout', authenticate, authController.logout);
 
@@ -184,14 +245,31 @@ router.post('/logout', authenticate, authController.logout);
  * /auth/me:
  *   get:
  *     summary: Get current authenticated user profile
+ *     description: Returns profile info for the user authenticated by the Bearer token.
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Current user profile retrieved successfully"
+ *               data:
+ *                 user:
+ *                   _id: "64b8f1a2c9e4a80012a3b4c5"
+ *                   name: "John Doe"
+ *                   email: "john@example.com"
+ *                   role: "User"
+ *                   createdAt: "2026-08-06T00:00:00.000Z"
+ *                   updatedAt: "2026-08-06T00:00:00.000Z"
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get('/me', authenticate, authController.getMe);
 

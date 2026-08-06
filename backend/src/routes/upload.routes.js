@@ -37,6 +37,7 @@ const router = Router();
  * /upload/image:
  *   post:
  *     summary: Upload a single image file (Protected)
+ *     description: Accepts multipart/form-data image file (Max 5MB) and returns relative path & absolute URL.
  *     tags: [File Upload]
  *     security:
  *       - bearerAuth: []
@@ -57,24 +58,23 @@ const router = Router();
  *         description: Image uploaded successfully
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 statusCode:
- *                   type: integer
- *                   example: 201
- *                 message:
- *                   type: string
- *                   example: "Image uploaded successfully"
- *                 data:
- *                   $ref: '#/components/schemas/FileUploadResponse'
+ *             example:
+ *               success: true
+ *               statusCode: 201
+ *               message: "Image uploaded successfully"
+ *               data:
+ *                 filename: "image-1691234567-123456789.jpg"
+ *                 originalName: "pizza.jpg"
+ *                 mimetype: "image/jpeg"
+ *                 size: 1024500
+ *                 path: "/uploads/image-1691234567-123456789.jpg"
+ *                 url: "http://localhost:5000/uploads/image-1691234567-123456789.jpg"
  *       400:
- *         description: Invalid file format, size limit exceeded, or missing file
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post('/image', authenticate, uploadSingleImage('image'), uploadController.uploadImage);
 
@@ -83,6 +83,7 @@ router.post('/image', authenticate, uploadSingleImage('image'), uploadController
  * /upload:
  *   delete:
  *     summary: Delete an uploaded image file by path (Protected)
+ *     description: Safely removes specified local image file from the /uploads directory.
  *     tags: [File Upload]
  *     security:
  *       - bearerAuth: []
@@ -100,12 +101,23 @@ router.post('/image', authenticate, uploadSingleImage('image'), uploadController
  *     responses:
  *       200:
  *         description: Image file deleted successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Image file deleted successfully"
+ *               data:
+ *                 message: "Image file deleted successfully"
+ *                 imagePath: "/uploads/image-1691234567-123456789.jpg"
  *       400:
- *         description: Invalid image path
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
  *       404:
- *         description: Image file not found on server
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.delete('/', authenticate, uploadController.deleteImage);
 

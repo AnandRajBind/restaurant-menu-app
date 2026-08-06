@@ -37,7 +37,7 @@ const router = Router();
  *           example: "Mains"
  *         image:
  *           type: string
- *           example: "/uploads/menu-1691234567-123456.jpg"
+ *           example: "/uploads/image-1691234567-123456.jpg"
  *         available:
  *           type: boolean
  *           example: true
@@ -46,10 +46,13 @@ const router = Router();
  *           properties:
  *             _id:
  *               type: string
+ *               example: "64b8f1a2c9e4a80012a3b4c5"
  *             name:
  *               type: string
+ *               example: "Admin User"
  *             email:
  *               type: string
+ *               example: "admin@restaurant.com"
  *         createdAt:
  *           type: string
  *           example: "2026-08-06T00:00:00.000Z"
@@ -77,6 +80,15 @@ const router = Router();
  *         hasPrevPage:
  *           type: boolean
  *           example: false
+ *     MenuListResult:
+ *       type: object
+ *       properties:
+ *         items:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/MenuItem'
+ *         pagination:
+ *           $ref: '#/components/schemas/MenuPagination'
  */
 
 /**
@@ -84,6 +96,7 @@ const router = Router();
  * /menu:
  *   post:
  *     summary: Create a new restaurant menu item (Admin Only)
+ *     description: Creates a new menu item with optional image file upload.
  *     tags: [Menu]
  *     security:
  *       - bearerAuth: []
@@ -113,15 +126,38 @@ const router = Router();
  *               image:
  *                 type: string
  *                 format: binary
+ *                 description: Optional image file (Max 5MB)
  *     responses:
  *       201:
  *         description: Menu item created successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 201
+ *               message: "Menu item created successfully"
+ *               data:
+ *                 _id: "64b8f1a2c9e4a80012a3b999"
+ *                 name: "Margherita Pizza"
+ *                 description: "Classic Italian pizza with fresh mozzarella, basil, and tomato sauce"
+ *                 price: 14.99
+ *                 category: "Mains"
+ *                 image: "/uploads/image-1691234567-123456.jpg"
+ *                 available: true
+ *                 createdBy:
+ *                   _id: "64b8f1a2c9e4a80012a3b4c5"
+ *                   name: "Admin User"
+ *                   email: "admin@restaurant.com"
+ *                 createdAt: "2026-08-06T00:00:00.000Z"
+ *                 updatedAt: "2026-08-06T00:00:00.000Z"
  *       400:
- *         description: Validation error
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
  *       403:
- *         description: Forbidden (Admin role required)
+ *         $ref: '#/components/responses/Forbidden'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.post(
   '/',
@@ -138,44 +174,83 @@ router.post(
  * /menu:
  *   get:
  *     summary: Get paginated menu items with search, filters, and sorting (Public)
+ *     description: Returns a paginated list of menu items supporting keyword search, category filtering, availability status, price/date sorting.
  *     tags: [Menu]
  *     parameters:
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search keyword for name or description
+ *         example: "pizza"
+ *         description: Keyword search across item name or description
  *       - in: query
  *         name: category
  *         schema:
  *           type: string
- *         description: Filter by menu category (e.g., Mains, Appetizers, Beverages)
+ *         example: "Mains"
+ *         description: Filter by menu category
  *       - in: query
  *         name: available
  *         schema:
  *           type: boolean
- *         description: Filter by availability status (true/false)
+ *         example: true
+ *         description: Filter by availability status
  *       - in: query
  *         name: sortBy
  *         schema:
  *           type: string
  *           enum: [price:asc, price:desc, name:asc, name:desc, createdAt:asc, createdAt:desc]
- *         description: Sort field and direction (default createdAt:desc)
+ *         example: "price:asc"
+ *         description: Sort criteria (default createdAt:desc)
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
  *           default: 1
+ *         example: 1
  *         description: Page number
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
  *           default: 10
- *         description: Items per page
+ *         example: 10
+ *         description: Number of items per page
  *     responses:
  *       200:
  *         description: Menu items list retrieved successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Menu items retrieved successfully"
+ *               data:
+ *                 items:
+ *                   - _id: "64b8f1a2c9e4a80012a3b999"
+ *                     name: "Margherita Pizza"
+ *                     description: "Classic Italian pizza with fresh mozzarella, basil, and tomato sauce"
+ *                     price: 14.99
+ *                     category: "Mains"
+ *                     image: "/uploads/image-1691234567-123456.jpg"
+ *                     available: true
+ *                     createdBy:
+ *                       _id: "64b8f1a2c9e4a80012a3b4c5"
+ *                       name: "Admin User"
+ *                       email: "admin@restaurant.com"
+ *                     createdAt: "2026-08-06T00:00:00.000Z"
+ *                     updatedAt: "2026-08-06T00:00:00.000Z"
+ *                 pagination:
+ *                   totalItems: 25
+ *                   totalPages: 3
+ *                   currentPage: 1
+ *                   limit: 10
+ *                   hasNextPage: true
+ *                   hasPrevPage: false
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get('/', queryMenuValidator, validate, menuController.getAllMenu);
 
@@ -191,12 +266,36 @@ router.get('/', queryMenuValidator, validate, menuController.getAllMenu);
  *         required: true
  *         schema:
  *           type: string
- *         description: MongoDB ObjectId of the menu item
+ *         example: "64b8f1a2c9e4a80012a3b999"
  *     responses:
  *       200:
  *         description: Menu item retrieved successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Menu item retrieved successfully"
+ *               data:
+ *                 _id: "64b8f1a2c9e4a80012a3b999"
+ *                 name: "Margherita Pizza"
+ *                 description: "Classic Italian pizza with fresh mozzarella, basil, and tomato sauce"
+ *                 price: 14.99
+ *                 category: "Mains"
+ *                 image: "/uploads/image-1691234567-123456.jpg"
+ *                 available: true
+ *                 createdBy:
+ *                   _id: "64b8f1a2c9e4a80012a3b4c5"
+ *                   name: "Admin User"
+ *                   email: "admin@restaurant.com"
+ *                 createdAt: "2026-08-06T00:00:00.000Z"
+ *                 updatedAt: "2026-08-06T00:00:00.000Z"
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       404:
- *         description: Menu item not found
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.get('/:id', mongoIdParamValidator, validate, menuController.getMenuById);
 
@@ -214,6 +313,7 @@ router.get('/:id', mongoIdParamValidator, validate, menuController.getMenuById);
  *         required: true
  *         schema:
  *           type: string
+ *         example: "64b8f1a2c9e4a80012a3b999"
  *     requestBody:
  *       content:
  *         multipart/form-data:
@@ -222,10 +322,12 @@ router.get('/:id', mongoIdParamValidator, validate, menuController.getMenuById);
  *             properties:
  *               name:
  *                 type: string
+ *                 example: "Supreme Margherita Pizza"
  *               description:
  *                 type: string
  *               price:
  *                 type: number
+ *                 example: 16.99
  *               category:
  *                 type: string
  *               available:
@@ -236,12 +338,29 @@ router.get('/:id', mongoIdParamValidator, validate, menuController.getMenuById);
  *     responses:
  *       200:
  *         description: Menu item updated successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Menu item updated successfully"
+ *               data:
+ *                 _id: "64b8f1a2c9e4a80012a3b999"
+ *                 name: "Supreme Margherita Pizza"
+ *                 price: 16.99
+ *                 category: "Mains"
+ *                 image: "/uploads/image-1691234567-999999.jpg"
+ *                 available: true
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
  *       403:
- *         description: Forbidden (Admin role required)
+ *         $ref: '#/components/responses/Forbidden'
  *       404:
- *         description: Menu item not found
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.put(
   '/:id',
@@ -267,15 +386,28 @@ router.put(
  *         required: true
  *         schema:
  *           type: string
+ *         example: "64b8f1a2c9e4a80012a3b999"
  *     responses:
  *       200:
  *         description: Menu item deleted successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               statusCode: 200
+ *               message: "Menu item deleted successfully"
+ *               data:
+ *                 id: "64b8f1a2c9e4a80012a3b999"
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  *       401:
- *         description: Unauthorized
+ *         $ref: '#/components/responses/Unauthorized'
  *       403:
- *         description: Forbidden (Admin role required)
+ *         $ref: '#/components/responses/Forbidden'
  *       404:
- *         description: Menu item not found
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
  */
 router.delete(
   '/:id',
