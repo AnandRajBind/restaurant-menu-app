@@ -50,17 +50,24 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, [token, clearAuthData]);
 
-  const login = async (credentials) => {
+  const login = async (credentials, rememberMe = false) => {
     try {
       const res = await authService.login(credentials);
       if (res.success && res.data) {
         saveAuthData(res.data.user, res.data.accessToken);
+
+        if (rememberMe) {
+          localStorage.setItem('remembered_email', credentials.email);
+        } else {
+          localStorage.removeItem('remembered_email');
+        }
+
         toast.success(res.message || 'Welcome back!');
         return { success: true };
       }
       return { success: false, message: res.message };
     } catch (error) {
-      const msg = error.message || 'Login failed.';
+      const msg = error.message || 'Invalid email or password.';
       toast.error(msg);
       return { success: false, message: msg };
     }
@@ -86,10 +93,10 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.logout();
     } catch (error) {
-      // Ignore errors
+      // Ignore logout API failure
     } finally {
       clearAuthData();
-      toast.success('Logged out.');
+      toast.success('Logged out successfully.');
     }
   };
 
