@@ -76,7 +76,7 @@ export const LoginPage = () => {
           <Input
             label="Email Address"
             type="email"
-            placeholder="Enter your emai"
+            placeholder="Enter your email"
             autoComplete="email"
             leftIcon={Mail}
             {...register('email', {
