@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "restaurant-menu-auth-v1",
-    "name": "Restaurant Menu System - Auth API",
-    "description": "Authentication & Authorization API Endpoints for Restaurant Menu Management System Backend.",
+    "_postman_id": "restaurant-menu-system-v1",
+    "name": "Restaurant Menu System API",
+    "description": "Complete API Endpoints for Restaurant Menu Management System Backend (Auth & Menu CRUD).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -15,129 +15,325 @@
       "key": "accessToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "menuId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "Register User",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"confirmPassword\": \"Password123!\",\n  \"role\": \"User\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/auth/register",
-          "host": ["{{baseUrl}}"],
-          "path": ["auth", "register"]
-        }
-      }
-    },
-    {
-      "name": "Login User",
-      "event": [
+      "name": "Authentication",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "var jsonData = pm.response.json();",
-              "if (jsonData.data && jsonData.data.accessToken) {",
-              "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
-              "}"
+          "name": "Register Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/auth/login",
-          "host": ["{{baseUrl}}"],
-          "path": ["auth", "login"]
-        }
-      }
-    },
-    {
-      "name": "Refresh Access Token",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/auth/refresh-token",
-          "host": ["{{baseUrl}}"],
-          "path": ["auth", "refresh-token"]
-        }
-      }
-    },
-    {
-      "name": "Get Current Profile (/me)",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@restaurant.com\",\n  \"password\": \"AdminPassword123!\",\n  \"confirmPassword\": \"AdminPassword123!\",\n  \"role\": \"Admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
             }
-          ]
+          }
         },
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/auth/me",
-          "host": ["{{baseUrl}}"],
-          "path": ["auth", "me"]
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@restaurant.com\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh-token"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile (/me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "name": "Logout User",
-      "request": {
-        "auth": {
-          "type": "bearer",
-          "bearer": [
+      "name": "Menu Management",
+      "item": [
+        {
+          "name": "Create Menu Item (Admin)",
+          "event": [
             {
-              "key": "token",
-              "value": "{{accessToken}}",
-              "type": "string"
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data._id) {",
+                  "    pm.collectionVariables.set('menuId', jsonData.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
             }
-          ]
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Margherita Pizza",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Classic Italian pizza topped with fresh mozzarella, ripe tomatoes, and fresh basil leaves.",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "14.99",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "Mains",
+                  "type": "text"
+                },
+                {
+                  "key": "available",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"]
+            }
+          }
         },
-        "method": "POST",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/auth/logout",
-          "host": ["{{baseUrl}}"],
-          "path": ["auth", "logout"]
+        {
+          "name": "Get All Menu Items (Search, Filter, Sort, Paginate)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu?search=pizza&category=Mains&available=true&sortBy=price:asc&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "pizza",
+                  "description": "Optional search term"
+                },
+                {
+                  "key": "category",
+                  "value": "Mains",
+                  "description": "Filter by category"
+                },
+                {
+                  "key": "available",
+                  "value": "true",
+                  "description": "Filter by availability"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "price:asc",
+                  "description": "Sort order (price:asc, price:desc, createdAt:desc)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Menu Item",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu", "{{menuId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Menu Item (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "price",
+                  "value": "16.99",
+                  "type": "text"
+                },
+                {
+                  "key": "available",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu", "{{menuId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Menu Item (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu", "{{menuId}}"]
+            }
+          }
         }
-      }
+      ]
     }
   ]
 }
