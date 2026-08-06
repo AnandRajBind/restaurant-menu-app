@@ -3,9 +3,12 @@ import path from 'path';
 import { ApiError } from '../utils/ApiError.js';
 import { HTTP_STATUS } from '../constants/httpStatus.js';
 
-// Ensure uploads directory path relative to process working directory
+// Ensure uploads directory path relative to application working directory
 const uploadDirectory = path.join(process.cwd(), 'uploads');
 
+/**
+ * Configure Multer disk storage engine
+ */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDirectory);
@@ -13,26 +16,40 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `menu-${uniqueSuffix}${ext}`);
+    cb(null, `image-${uniqueSuffix}${ext}`);
   },
 });
 
+/**
+ * File filter to enforce allowed image extensions & mime-types
+ */
 const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+  ];
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const ext = path.extname(file.originalname).toLowerCase();
 
-  if (allowedMimeTypes.includes(file.mimetype)) {
+  if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
     cb(
       new ApiError(
         HTTP_STATUS.BAD_REQUEST,
-        'Invalid file type. Only JPG, JPEG, PNG, and WEBP images are allowed.'
+        `Invalid file format '${ext}'. Allowed extensions: ${allowedExtensions.join(', ')}`
       ),
       false
     );
   }
 };
 
+/**
+ * Multer upload instance configured with 5MB max file size limit
+ */
 export const upload = multer({
   storage,
   fileFilter,
@@ -42,10 +59,10 @@ export const upload = multer({
 });
 
 /**
- * Single image upload middleware wrapper handling Multer error delegation cleanly.
- * @param {string} fieldName - Form field name (e.g., 'image')
+ * Reusable single file upload middleware wrapper handling Multer error delegation.
+ * @param {string} [fieldName='image'] - Form-data key name
  */
-export const uploadSingleImage = (fieldName) => {
+export const uploadSingleImage = (fieldName = 'image') => {
   return (req, res, next) => {
     const uploadHandler = upload.single(fieldName);
 
@@ -55,7 +72,7 @@ export const uploadSingleImage = (fieldName) => {
           return next(
             new ApiError(
               HTTP_STATUS.BAD_REQUEST,
-              'File size limit exceeded. Maximum allowed size is 5MB.'
+              'File size limit exceeded. Maximum allowed file size is 5MB.'
             )
           );
         }
