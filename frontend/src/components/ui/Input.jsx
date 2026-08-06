@@ -18,6 +18,19 @@ export const Input = forwardRef(
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
     const errorId = inputId ? `${inputId}-error` : undefined;
 
+    const renderRightIcon = () => {
+      if (!RightIcon) return null;
+      if (typeof RightIcon === 'function' || (typeof RightIcon === 'object' && RightIcon.$$typeof)) {
+        // If it's a Component function or a JSX Element
+        if (React.isValidElement(RightIcon)) {
+          return RightIcon;
+        }
+        const Component = RightIcon;
+        return <Component className="w-4 h-4" aria-hidden="true" />;
+      }
+      return RightIcon;
+    };
+
     return (
       <div className="space-y-1.5 w-full">
         {label && (
@@ -40,14 +53,14 @@ export const Input = forwardRef(
             type={type}
             aria-invalid={!!error}
             aria-describedby={error ? errorId : undefined}
-            className={`saas-input ${LeftIcon ? 'pl-10' : ''} ${
-              RightIcon ? 'pr-10' : ''
+            className={`saas-input ${LeftIcon ? 'pl-10' : 'pl-3.5'} ${
+              RightIcon ? 'pr-10' : 'pr-3.5'
             } ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
             {...props}
           />
           {RightIcon && (
-            <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
-              <RightIcon className="w-4 h-4" aria-hidden="true" />
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center z-10">
+              {renderRightIcon()}
             </div>
           )}
         </div>

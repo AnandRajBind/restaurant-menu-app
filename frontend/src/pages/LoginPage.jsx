@@ -64,7 +64,7 @@ export const LoginPage = () => {
           <Input
             label="Password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Enter your password"
             leftIcon={Lock}
             {...register('password', { required: 'Password is required' })}
             error={errors.password?.message}

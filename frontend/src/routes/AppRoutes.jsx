@@ -13,7 +13,6 @@ const SettingsPage = lazy(() => import('../features/settings/SettingsPage'));
 const LoginPage = lazy(() => import('../features/auth/LoginPage'));
 const RegisterPage = lazy(() => import('../features/auth/RegisterPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
-const DesignSystemShowcase = lazy(() => import('../components/ui/DesignSystemShowcase'));
 
 export const AppRoutes = () => {
   return (
@@ -22,16 +21,6 @@ export const AppRoutes = () => {
         {/* Auth Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
-        {/* Design System Live Showcase Route */}
-        <Route
-          path="/design-system"
-          element={
-            <Layout>
-              <DesignSystemShowcase />
-            </Layout>
-          }
-        />
 
         {/* Protected Feature Routes Wrapped in SaaS Layout */}
         <Route

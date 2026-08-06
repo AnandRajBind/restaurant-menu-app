@@ -76,7 +76,7 @@ export const LoginPage = () => {
           <Input
             label="Email Address"
             type="email"
-            placeholder="name@restaurant.com"
+            placeholder="Enter your emai"
             autoComplete="email"
             leftIcon={Mail}
             {...register('email', {
@@ -89,30 +89,30 @@ export const LoginPage = () => {
             error={errors.email?.message}
           />
 
-          {/* Password with Eye Toggle */}
-          <div className="relative">
-            <Input
-              label="Password"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••"
-              autoComplete="current-password"
-              leftIcon={Lock}
-              {...register('password', {
-                required: 'Password is required',
-                minLength: { value: 6, message: 'Password must be at least 6 characters' },
-              })}
-              error={errors.password?.message}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-              title={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
+          {/* Password with Vertically Centered Eye Toggle */}
+          <Input
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            autoComplete="current-password"
+            leftIcon={Lock}
+            rightIcon={
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 focus:outline-none"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            }
+            {...register('password', {
+              required: 'Password is required',
+              minLength: { value: 6, message: 'Password must be at least 6 characters' },
+            })}
+            error={errors.password?.message}
+          />
 
           {/* Remember Me Checkbox */}
           <div className="flex items-center justify-between pt-1">

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Utensils, Grid, User, Settings, Shield, Palette } from 'lucide-react';
+import { LayoutDashboard, Utensils, Grid, User, Settings, Shield } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export const Sidebar = ({ isOpen, onClose }) => {
@@ -22,7 +22,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
     { name: 'Categories', path: '/categories', icon: Grid },
     { name: 'My Profile', path: '/profile', icon: User },
     { name: 'Settings', path: '/settings', icon: Settings },
-    { name: 'Design System', path: '/design-system', icon: Palette },
   ];
 
   return (

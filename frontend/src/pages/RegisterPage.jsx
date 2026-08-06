@@ -53,7 +53,7 @@ export const RegisterPage = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             label="Full Name"
-            placeholder="John Doe"
+            placeholder="Enter your name"
             leftIcon={User}
             {...register('name', { required: 'Name is required' })}
             error={errors.name?.message}
@@ -62,7 +62,7 @@ export const RegisterPage = () => {
           <Input
             label="Email Address"
             type="email"
-            placeholder="john@restaurant.com"
+            placeholder="[EMAIL_ADDRESS]"
             leftIcon={Mail}
             {...register('email', {
               required: 'Email address is required',
@@ -77,7 +77,7 @@ export const RegisterPage = () => {
           <Input
             label="Password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Enter your password"
             leftIcon={Lock}
             {...register('password', {
               required: 'Password is required',
@@ -89,7 +89,7 @@ export const RegisterPage = () => {
           <Input
             label="Confirm Password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Enter confirm password"
             leftIcon={Lock}
             {...register('confirmPassword', {
               required: 'Please confirm password',

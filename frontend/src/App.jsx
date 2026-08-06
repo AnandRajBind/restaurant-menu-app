@@ -21,10 +21,10 @@ export function App() {
               <AppRoutes />
             </div>
             <Toaster
-              position="bottom-right"
+              position="top-right"
               toastOptions={{
                 duration: 4000,
-                className: 'dark:bg-slate-900 dark:text-slate-100 border dark:border-slate-800 rounded-xl text-sm font-medium',
+                className: 'dark:bg-slate-900 dark:text-slate-100 border dark:border-slate-800 rounded-xl text-sm font-medium shadow-md',
               }}
             />
           </BrowserRouter>
