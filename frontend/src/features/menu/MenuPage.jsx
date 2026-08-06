@@ -209,7 +209,7 @@ export const MenuPage = () => {
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-md transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-xs'
+                    ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-sm'
                     : 'text-slate-400 hover:text-slate-600'
                 }`}
                 title="Grid View"
@@ -220,7 +220,7 @@ export const MenuPage = () => {
                 onClick={() => setViewMode('table')}
                 className={`p-1.5 rounded-md transition-colors ${
                   viewMode === 'table'
-                    ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-xs'
+                    ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-sm'
                     : 'text-slate-400 hover:text-slate-600'
                 }`}
                 title="Table View"
@@ -242,7 +242,7 @@ export const MenuPage = () => {
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                 selectedCategory === cat
-                  ? 'bg-primary-600 text-white shadow-xs'
+                  ? 'bg-primary-600 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
               }`}
             >
