@@ -5,6 +5,8 @@ dotenv.config();
 
 import app from './app.js';
 import { connectDB, disconnectDB } from './config/db.js';
+import { validateEnv } from './config/env.config.js';
+import { logger } from './utils/logger.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -14,27 +16,30 @@ let server;
  * Bootstraps the application server and database connection.
  */
 const startServer = async () => {
+  // Validate Environment Variables on boot
+  validateEnv();
+
   // Connect to MongoDB Database
   await connectDB();
 
   // Start Express HTTP Server
   server = app.listen(PORT, () => {
-    console.log(
-      `[Server] Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
+    logger.info(
+      `Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`
     );
-    console.log(`[Server] API Documentation available at http://localhost:${PORT}/api-docs`);
+    logger.info(`API Documentation available at http://localhost:${PORT}/api-docs`);
   });
 };
 
 // Handle Uncaught Exceptions
 process.on('uncaughtException', (err) => {
-  console.error('[Process] UNCAUGHT EXCEPTION! Shutting down process immediately...', err);
+  logger.error('UNCAUGHT EXCEPTION! Shutting down process immediately...', err);
   process.exit(1);
 });
 
 // Handle Unhandled Rejections
 process.on('unhandledRejection', (reason) => {
-  console.error('[Process] UNHANDLED REJECTION! Shutting down server gracefully...', reason);
+  logger.error('UNHANDLED REJECTION! Shutting down server gracefully...', reason);
   if (server) {
     server.close(() => {
       process.exit(1);
@@ -46,10 +51,10 @@ process.on('unhandledRejection', (reason) => {
 
 // Graceful Shutdown Signals (Render / Docker / Kubernetes)
 const gracefulShutdown = (signal) => {
-  console.log(`[Process] ${signal} signal received. Closing HTTP server and database connections...`);
+  logger.info(`${signal} signal received. Closing HTTP server and database connections...`);
   if (server) {
     server.close(async () => {
-      console.log('[Process] HTTP server closed.');
+      logger.info('HTTP server closed.');
       await disconnectDB();
       process.exit(0);
     });

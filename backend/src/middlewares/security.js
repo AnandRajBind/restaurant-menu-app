@@ -1,5 +1,6 @@
 import cors from 'cors';
 import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 
 /**
  * Configure dynamic CORS origin options supporting single URL, comma-separated URLs, or wildcard local dev.
@@ -39,5 +40,17 @@ export const configureHelmet = () => {
   return helmet({
     contentSecurityPolicy: process.env.NODE_ENV === 'production',
     crossOriginResourcePolicy: { policy: 'cross-origin' }, // Allows uploaded static files to be served across domains
+  });
+};
+
+/**
+ * Configure MongoDB Sanitization middleware to strip $ and . operators from user input (preventing NoSQL injection)
+ */
+export const configureMongoSanitize = () => {
+  return mongoSanitize({
+    replaceWith: '_',
+    onSanitize: ({ req, key }) => {
+      console.warn(`[Security] NoSQL Injection attempt detected and sanitized in key '${key}' from IP ${req.ip}`);
+    },
   });
 };

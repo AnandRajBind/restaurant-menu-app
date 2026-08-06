@@ -1,131 +1,153 @@
 # Restaurant Menu Management System - Backend API
 
-Production-ready, scalable, and modular Node.js/Express backend API for the Restaurant Menu Management System built as part of a technical assessment.
+Production-grade, scalable, and modular Node.js/Express backend API for the Restaurant Menu Management System built as part of a technical assessment.
 
-## 🚀 Tech Stack
+## 🚀 Tech Stack & Security Hardening
 
 - **Runtime**: Node.js (>= 18.0.0, ES Modules)
-- **Framework**: Express.js (v4)
+- **Framework**: Express.js (v4) with `trust proxy` enabled
 - **Database & ORM**: MongoDB Atlas, Mongoose (v8)
-- **Security**: Helmet, Express Rate Limit, CORS, bcryptjs, JSON Web Token (JWT)
-- **Logging & Utilities**: Morgan, Cookie Parser, Multer
-- **API Documentation**: Swagger UI Express, Swagger JSDoc
+- **Security & Protection**:
+  - **Helmet**: Secure HTTP Headers & CSP configuration
+  - **NoSQL Injection Prevention**: `express-mongo-sanitize` stripping `$`/`.` operators
+  - **Rate Limiting**: `express-rate-limit` protecting API endpoints against brute force
+  - **Auth Security**: Short-lived JWT Access Tokens + HTTP-only Secure Refresh Tokens with Token Rotation & Bcrypt password hashing
+  - **CORS**: Dynamic origin matching for Vercel/Render frontend integration
+- **Logging & Diagnostics**: Centralized structured logger (`src/utils/logger.js`) & Morgan HTTP logger
+- **API Documentation**: Swagger UI Express (`/api-docs`), Swagger JSDoc, and Postman Collection (`src/docs/postman_collection.json`)
 
 ---
 
-## 📁 Project Architecture & Folder Structure
+## 📁 Architecture & Directory Structure
 
-Follows standard **MVC (Model-View-Controller)** / Tiered Layer Architecture adhering to **SOLID principles** and **REST API conventions**.
+Follows standard **MVC (Model-View-Controller)** Architecture adhering to **SOLID principles** and **REST API conventions**.
 
 ```text
 backend/
 ├── src/
 │   ├── config/
-│   │   ├── db.js             # Production Mongoose connection & pool events
-│   │   └── swagger.js        # OpenAPI 3.0 JSDoc specification
+│   │   ├── db.js             # Mongoose MongoDB connection & disconnect events
+│   │   ├── env.config.js     # Startup environment variable validation & health check
+│   │   └── swagger.js        # OpenAPI 3.0 JSDoc configuration
 │   ├── constants/
-│   │   └── httpStatus.js     # Standardized HTTP status codes
-│   ├── controllers/          # Request handler controllers
-│   ├── docs/                 # Swagger annotations & external docs
+│   │   ├── httpStatus.js     # HTTP status code definitions
+│   │   └── roles.js          # User roles enum ('Admin', 'User')
+│   ├── controllers/
+│   │   ├── auth.controller.js# Authentication HTTP handlers
+│   │   ├── menu.controller.js# Menu CRUD HTTP handlers
+│   │   └── upload.controller.js # Standalone file upload HTTP handlers
+│   ├── docs/
+│   │   └── postman_collection.json # Exportable Postman collection
 │   ├── middlewares/
-│   │   ├── error.middleware.js   # Production-safe error handler
-│   │   ├── notFound.middleware.js# 404 handler for unknown routes
-│   │   ├── rateLimiter.js        # Rate limiting middleware
-│   │   └── security.js           # Helmet & dynamic CORS configuration
-│   ├── models/               # Mongoose schemas & data models
+│   │   ├── auth.middleware.js# Authentication & RBAC authorization middlewares
+│   │   ├── error.middleware.js   # Centralized error handler
+│   │   ├── notFound.middleware.js# 404 handler for unmapped routes
+│   │   ├── rateLimiter.js        # IP rate limiting
+│   │   ├── security.js           # Helmet, CORS & MongoDB sanitization
+│   │   ├── upload.middleware.js  # Reusable Multer single file upload helper
+│   │   └── validate.middleware.js# express-validator result handler
+│   ├── models/
+│   │   ├── menu.model.js     # Menu Schema with compound & text search indexes
+│   │   └── user.model.js     # User Schema with password hashing hooks
 │   ├── routes/
-│   │   ├── index.js          # Main API v1 router
-│   │   └── health.routes.js  # System health check route (/api/v1/health)
-│   ├── services/             # Core business logic services
+│   │   ├── auth.routes.js    # Auth endpoints (/api/v1/auth/*)
+│   │   ├── health.routes.js  # System health check (/api/v1/health)
+│   │   ├── menu.routes.js    # Menu CRUD endpoints (/api/v1/menu/*)
+│   │   ├── upload.routes.js  # Upload endpoints (/api/v1/upload/*)
+│   │   └── index.js          # Main API router aggregator
+│   ├── services/
+│   │   ├── auth.service.js   # Auth business logic & token rotation
+│   │   ├── menu.service.js   # Menu CRUD, search, filter, sort & pagination logic
+│   │   └── upload.service.js # Upload processing & image deletion logic
 │   ├── utils/
-│   │   ├── ApiError.js       # Custom ApiError class extending Error
-│   │   ├── ApiResponse.js    # Standardized API response structure
-│   │   └── asyncHandler.js   # Higher-order async route wrapper
-│   ├── validators/           # Schema request validation middlewares
+│   │   ├── ApiError.js       # Standardized API Error class
+│   │   ├── ApiResponse.js    # Standardized API Success Response wrapper
+│   │   ├── asyncHandler.js   # Async error catch wrapper
+│   │   ├── jwt.util.js       # JWT signing, verification & cookie helpers
+│   │   └── logger.js         # Centralized structured logger
+│   └── validators/
+│       ├── auth.validator.js # Auth express-validator schemas
+│       └── menu.validator.js # Menu express-validator schemas
 │   ├── app.js                # Express app setup & middleware pipeline
-│   └── server.js             # Entry point: process management & server bootstrap
-├── uploads/                  # Deployment-friendly local uploads directory
+│   └── server.js             # Server entry point & process signal management
+├── uploads/                  # Local uploads directory with cache control
+├── render.yaml               # Render 1-click infrastructure blueprint
 ├── .env.example              # Environment variables template
-├── .gitignore                # Production gitignore
-├── package.json              # ES Module configuration & dependencies
-└── README.md                 # Project documentation
+├── .gitignore                # Production gitignore rules
+├── package.json              # Dependency manifest
+└── README.md                 # Technical documentation
 ```
 
 ---
 
-## ⚙️ Environment Variables Setup
+## ⚙️ Environment Variables Specification
 
-Create a `.env` file in the `backend/` root directory by copying `.env.example`:
+Copy `.env.example` to create your local `.env` file:
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable | Description | Default / Example Value |
-| :--- | :--- | :--- |
-| `PORT` | HTTP Server listening port | `5000` |
-| `NODE_ENV` | Application environment (`development` / `production`) | `development` |
-| `MONGODB_URI` | MongoDB Atlas Connection String | `mongodb+srv://user:pass@cluster.mongodb.net/db_name` |
-| `CLIENT_URL` | Allowed CORS frontend origins (comma-separated for multi-origin support) | `http://localhost:5173` |
-| `JWT_SECRET` | Secret key used for signing JWT access tokens | `your_jwt_secret_key` |
-| `JWT_EXPIRES_IN` | JWT token expiration duration | `7d` |
-| `RATE_LIMIT_WINDOW_MS` | Rate limit window in milliseconds | `900000` (15 min) |
-| `RATE_LIMIT_MAX` | Max requests per IP within rate limit window | `100` |
+| Variable | Required | Description | Example / Default Value |
+| :--- | :---: | :--- | :--- |
+| `PORT` | No | HTTP listening port | `5000` |
+| `NODE_ENV` | No | Environment mode (`development`/`production`) | `development` |
+| `MONGODB_URI` | **Yes** | MongoDB Atlas connection string | `mongodb+srv://user:pass@cluster.mongodb.net/db_name` |
+| `CLIENT_URL` | **Yes** | Allowed CORS frontend origins (comma-separated) | `http://localhost:5173,https://your-app.vercel.app` |
+| `JWT_SECRET` | Recommended | Fallback secret for JWT tokens | `super_secret_jwt_key` |
+| `ACCESS_TOKEN_SECRET` | Recommended | Secret key for signing Access Tokens | `access_token_secret_key` |
+| `ACCESS_TOKEN_EXPIRES_IN` | No | Access token lifespan | `15m` |
+| `REFRESH_TOKEN_SECRET` | Recommended | Secret key for signing Refresh Tokens | `refresh_token_secret_key` |
+| `REFRESH_TOKEN_EXPIRES_IN` | No | Refresh token lifespan | `7d` |
 
 ---
 
-## 🛠️ Local Installation & Running
+## 🛠️ Local Running Instructions
 
-1. **Navigate to the backend directory**:
+1. **Install dependencies**:
    ```bash
    cd backend
-   ```
-
-2. **Install dependencies**:
-   ```bash
    npm install
    ```
 
-3. **Start Development Server** (with nodemon hot-reload):
+2. **Run in development mode** (hot-reloading with nodemon):
    ```bash
    npm run dev
    ```
 
-4. **Start Production Server**:
+3. **Run in production mode**:
    ```bash
    npm start
    ```
 
 ---
 
-## 📖 Interactive API Documentation
+## 📖 API Documentation & Postman
 
-Once the server is running, access Swagger UI documentation at:
-
-- **Swagger UI**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
+- **Swagger Interactive UI**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 - **Health Check Endpoint**: [http://localhost:5000/api/v1/health](http://localhost:5000/api/v1/health)
+- **Postman Collection**: Import [`src/docs/postman_collection.json`](file:///d:/restaurant-menu-app/backend/src/docs/postman_collection.json) directly into Postman.
 
 ---
 
-## ☁️ Deployment Guide
+## ☁️ Render Deployment Guide
 
-### Deploying to Render (Backend)
+### Option A: 1-Click Blueprint Deployment (Recommended)
+1. Push repository to GitHub/GitLab.
+2. In **Render Dashboard**, click **New +** -> **Blueprint**.
+3. Connect your repository. Render will automatically detect `render.yaml` inside `backend/`.
+4. Provide values for `MONGODB_URI` and `CLIENT_URL` in the Render dashboard prompt.
 
-1. Connect your repository to **Render**.
-2. Create a new **Web Service**.
-3. Set the build and start settings:
+### Option B: Manual Web Service Setup
+1. Create a new **Web Service** on Render.
+2. Configure settings:
    - **Root Directory**: `backend`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
    - **Environment**: `Node`
-4. Configure Environment Variables in Render Dashboard:
+3. Add Environment Variables:
    - `NODE_ENV` = `production`
    - `MONGODB_URI` = `<Your MongoDB Atlas Connection String>`
-   - `CLIENT_URL` = `<Your Vercel Frontend Deployment URL>` (e.g. `https://your-app.vercel.app`)
-   - `JWT_SECRET` = `<Production Strong Secret>`
-
-### Deploying to Vercel (Frontend Integration)
-
-When configuring the frontend on Vercel:
-- Set environment variable `VITE_API_URL` to your Render backend URL (e.g. `https://your-backend.onrender.com/api/v1`).
-- Ensure `CLIENT_URL` on Render matches your deployed Vercel domain to prevent CORS issues.
+   - `CLIENT_URL` = `<Your Vercel Deployed Frontend URL>`
+   - `ACCESS_TOKEN_SECRET` = `<Strong Random 32+ Byte Key>`
+   - `REFRESH_TOKEN_SECRET` = `<Strong Random 32+ Byte Key>`

@@ -1,5 +1,6 @@
 import { ApiError } from '../utils/ApiError.js';
 import { HTTP_STATUS } from '../constants/httpStatus.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Centralized Error Handling Middleware for Express applications.
@@ -57,9 +58,11 @@ export const errorHandler = (err, req, res, next) => {
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack }),
   };
 
-  // Log non-production runtime server errors to console
-  if (process.env.NODE_ENV !== 'production' || error.statusCode >= 500) {
-    console.error(`[Error] [${req.method}] ${req.originalUrl} - StatusCode: ${error.statusCode} - ${error.message}`);
+  // Log server errors (5xx) or warnings using centralized logger
+  if (error.statusCode >= 500) {
+    logger.error(`[${req.method}] ${req.originalUrl} - ${error.message}`, error);
+  } else {
+    logger.warn(`[${req.method}] ${req.originalUrl} - StatusCode: ${error.statusCode} - ${error.message}`);
   }
 
   return res.status(error.statusCode).json(response);

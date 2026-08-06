@@ -4,7 +4,11 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 
-import { configureCors, configureHelmet } from './middlewares/security.js';
+import {
+  configureCors,
+  configureHelmet,
+  configureMongoSanitize,
+} from './middlewares/security.js';
 import { apiRateLimiter } from './middlewares/rateLimiter.js';
 import { notFoundHandler } from './middlewares/notFound.middleware.js';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -13,12 +17,16 @@ import v1Router from './routes/index.js';
 
 const app = express();
 
+// Enable Trust Proxy for Reverse Proxies (Render, Vercel, Cloudflare, NGINX)
+app.set('trust proxy', 1);
+
 // Security Middlewares
 app.use(configureHelmet());
 app.use(configureCors());
+app.use(configureMongoSanitize());
 app.use('/api/', apiRateLimiter);
 
-// General Middlewares
+// General Body Parsers & Cookie Parser
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(cookieParser());
@@ -30,8 +38,14 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('combined'));
 }
 
-// Static Files Serving (Uploads directory using relative path)
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Static Assets Serving with Cache Headers (Uploads folder)
+app.use(
+  '/uploads',
+  express.static(path.join(process.cwd(), 'uploads'), {
+    maxAge: '1y',
+    immutable: true,
+  })
+);
 
 // Swagger API Documentation Endpoint
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
