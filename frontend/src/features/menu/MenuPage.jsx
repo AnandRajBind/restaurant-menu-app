@@ -4,6 +4,7 @@ import { MENU_CATEGORIES, SORT_OPTIONS } from '../../utils/constants';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { MenuCard } from './MenuCard';
 import { MenuTable } from './MenuTable';
 import { MenuFormModal } from './MenuFormModal';
@@ -43,6 +44,11 @@ export const MenuPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+
+  // Delete Confirmation Dialog State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchMenuItems = useCallback(async () => {
     setLoading(true);
@@ -119,15 +125,24 @@ export const MenuPage = () => {
     }
   };
 
-  const handleDeleteItem = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
-      try {
-        await menuService.delete(id);
-        toast.success('Menu item deleted successfully!');
-        fetchMenuItems();
-      } catch (err) {
-        toast.error(err.message || 'Failed to delete menu item.');
-      }
+  const promptDeleteItem = (id, name) => {
+    setItemToDelete({ id, name });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await menuService.delete(itemToDelete.id);
+      toast.success(`"${itemToDelete.name}" deleted successfully!`);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+      fetchMenuItems();
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete menu item.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -136,11 +151,11 @@ export const MenuPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-extrabold font-heading text-slate-900 dark:text-slate-100">
             Menu Management
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Browse, search, filter, and manage restaurant offerings.
+            Browse, search, filter, update, and manage restaurant offerings.
           </p>
         </div>
 
@@ -259,7 +274,7 @@ export const MenuPage = () => {
               key={item._id}
               item={item}
               onEdit={handleOpenEditModal}
-              onDelete={handleDeleteItem}
+              onDelete={promptDeleteItem}
               isAdmin={isAdmin}
             />
           ))}
@@ -268,7 +283,7 @@ export const MenuPage = () => {
         <MenuTable
           items={items}
           onEdit={handleOpenEditModal}
-          onDelete={handleDeleteItem}
+          onDelete={promptDeleteItem}
           isAdmin={isAdmin}
         />
       )}
@@ -312,7 +327,22 @@ export const MenuPage = () => {
         initialData={editingItem}
         isLoading={modalLoading}
       />
+
+      {/* Custom Delete Confirmation Dialog Modal */}
+      <ConfirmDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Menu Item"
+        message={`Are you sure you want to delete "${itemToDelete?.name}"? This item will be permanently removed from the restaurant menu.`}
+        confirmText="Delete Item"
+        isLoading={deleteLoading}
+      />
     </div>
   );
 };
+
 export default MenuPage;

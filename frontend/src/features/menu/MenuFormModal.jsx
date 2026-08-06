@@ -8,7 +8,7 @@ import { Checkbox } from '../../components/ui/Checkbox';
 import { Modal } from '../../components/ui/Modal';
 import { MENU_CATEGORIES } from '../../utils/constants';
 import { getImageUrl } from '../../utils/helpers';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Upload } from 'lucide-react';
 
 export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoading }) => {
   const [imagePreview, setImagePreview] = useState(null);
@@ -40,7 +40,7 @@ export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoadin
       });
       setImagePreview(null);
     }
-  }, [initialData, reset]);
+  }, [initialData, reset, isOpen]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -59,7 +59,8 @@ export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoadin
       onClose={onClose}
       title={initialData ? 'Edit Menu Item' : 'Add New Menu Item'}
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4" noValidate>
+        {/* Item Name */}
         <Input
           label="Item Name"
           placeholder="e.g. Margherita Pizza"
@@ -67,6 +68,7 @@ export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoadin
           error={errors.name?.message}
         />
 
+        {/* Description */}
         <Textarea
           label="Description"
           placeholder="Fresh basil, ripe tomatoes, creamy mozzarella..."
@@ -74,13 +76,17 @@ export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoadin
           error={errors.description?.message}
         />
 
+        {/* Price & Category */}
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Price ($)"
             type="number"
             step="0.01"
             placeholder="14.99"
-            {...register('price', { required: 'Price is required', min: 0 })}
+            {...register('price', {
+              required: 'Price is required',
+              min: { value: 0, message: 'Price cannot be negative' },
+            })}
             error={errors.price?.message}
           />
 
@@ -91,14 +97,15 @@ export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoadin
           />
         </div>
 
+        {/* Availability Toggle */}
         <Checkbox
           label="Available for Ordering"
           description="Toggle whether item is active or out of stock"
           {...register('available')}
         />
 
-        {/* Image File Upload */}
-        <div className="space-y-1.5">
+        {/* Image File Upload & Preview */}
+        <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-slate-800">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
             Food Image Upload
           </label>
@@ -106,34 +113,42 @@ export const MenuFormModal = ({ isOpen, onClose, onSubmit, initialData, isLoadin
             {imagePreview ? (
               <img
                 src={imagePreview}
-                alt="Preview"
-                className="w-14 h-14 rounded-lg object-cover border border-slate-200 dark:border-slate-700"
+                alt="Food Preview"
+                className="w-16 h-16 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0"
               />
             ) : (
-              <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 border border-dashed border-slate-300 dark:border-slate-700">
+              <div className="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 border border-dashed border-slate-300 dark:border-slate-700 shrink-0">
                 <ImageIcon className="w-6 h-6" />
               </div>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              {...register('image')}
-              onChange={handleImageChange}
-              className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-            />
+
+            <div className="space-y-1 flex-1">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                {...register('image')}
+                onChange={handleImageChange}
+                className="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer"
+              />
+              <p className="text-[10px] text-slate-400">
+                Supported formats: JPG, PNG, WEBP, GIF (Max 5MB)
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
+        {/* Action Footer */}
         <div className="flex justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-          <Button variant="ghost" onClick={onClose}>
+          <Button variant="ghost" type="button" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button type="submit" variant="primary" isLoading={isLoading}>
-            {initialData ? 'Save Changes' : 'Create Item'}
+          <Button type="submit" variant="primary" isLoading={isLoading} leftIcon={Upload}>
+            {initialData ? 'Save Changes' : 'Create Menu Item'}
           </Button>
         </div>
       </form>
     </Modal>
   );
 };
+
+export default MenuFormModal;
