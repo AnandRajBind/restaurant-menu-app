@@ -37,7 +37,7 @@ backend/
 │   │   ├── menu.controller.js# Menu CRUD HTTP handlers
 │   │   └── upload.controller.js # Standalone file upload HTTP handlers
 │   ├── docs/
-│   │   └── postman_collection.json # Exportable Postman collection
+│   │   └── postman_collection.json # Exportable Postman collection with test scripts
 │   ├── middlewares/
 │   │   ├── auth.middleware.js# Authentication & RBAC authorization middlewares
 │   │   ├── error.middleware.js   # Centralized error handler
@@ -122,11 +122,49 @@ cp .env.example .env
 
 ---
 
-## 📖 API Documentation & Postman
+## 🧪 Postman API Testing Instructions
 
-- **Swagger Interactive UI**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
-- **Health Check Endpoint**: [http://localhost:5000/api/v1/health](http://localhost:5000/api/v1/health)
-- **Postman Collection**: Import [`src/docs/postman_collection.json`](file:///d:/restaurant-menu-app/backend/src/docs/postman_collection.json) directly into Postman.
+An exportable Postman collection is located at [`src/docs/postman_collection.json`](file:///d:/restaurant-menu-app/backend/src/docs/postman_collection.json).
+
+### Step-by-Step Postman Testing Workflow:
+
+1. **Import the Collection**:
+   - Open Postman -> Click **Import** -> Select file `backend/src/docs/postman_collection.json`.
+
+2. **Check System Health**:
+   - Execute `1. System -> Get Health Status`. Verify HTTP `200 OK` response with `status: "UP"`.
+
+3. **Register and Login Admin**:
+   - Execute `2. Authentication -> Register Admin (Role: Admin)`.
+   - Execute `2. Authentication -> Login Admin (Auto-Save Token)`.
+   - *Note*: The test script automatically extracts `accessToken` and saves it to collection variable `accessToken`.
+
+4. **Test Menu CRUD Operations**:
+   - Execute `3. Menu Management -> Create Menu Item (Admin)`.
+   - *Note*: The test script automatically saves created item ID into `menuId` collection variable.
+   - Execute `3. Menu Management -> Get All Menu Items (Default)`.
+   - Execute `3. Menu Management -> Search Menu Items (?search=pizza)`.
+   - Execute `3. Menu Management -> Filter Menu Items (?category=Mains&available=true)`.
+   - Execute `3. Menu Management -> Sort Menu Items by Price (?sortBy=price:asc)`.
+   - Execute `3. Menu Management -> Paginate Menu Items (?page=1&limit=5)`.
+   - Execute `3. Menu Management -> Get Single Menu Item by ID`.
+   - Execute `3. Menu Management -> Update Menu Item (Admin)`.
+   - Execute `3. Menu Management -> Delete Menu Item (Admin)`.
+
+5. **Test Standalone Image Upload**:
+   - Execute `4. File Upload -> Upload Image File` (Attach a sample `.jpg` or `.png` file in Form Data).
+   - Execute `4. File Upload -> Delete Uploaded Image File`.
+
+6. **Run Automated Collection Runner**:
+   - Right-click **Restaurant Menu System API** collection -> Select **Run collection** -> Click **Run Restaurant Menu System API**.
+   - All automated `pm.test()` assertions should pass (`Status code is 200/201`, `Auto-saves Access Token`, etc.).
+
+---
+
+## 📖 Interactive Swagger API Documentation
+
+Access Swagger UI interactive docs at:
+- **Swagger UI**: [http://localhost:5000/api-docs](http://localhost:5000/api-docs)
 
 ---
 

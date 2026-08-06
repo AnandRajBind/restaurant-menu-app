@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "restaurant-menu-system-v1",
+    "_postman_id": "restaurant-menu-system-v1-full",
     "name": "Restaurant Menu System API",
-    "description": "Complete API Endpoints for Restaurant Menu Management System Backend (Auth, Menu CRUD & Standalone Image Upload).",
+    "description": "Production-grade Postman collection for Restaurant Menu Management System Backend containing automated test scripts, variable extraction, and authentication header presets.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -29,10 +29,106 @@
   ],
   "item": [
     {
-      "name": "Authentication",
+      "name": "1. System",
       "item": [
         {
-          "name": "Register Admin User",
+          "name": "Get Health Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('System status is UP', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.status).to.eql('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Register User (Role: User)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Returns User object and Access Token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.user.role).to.eql('User');",
+                  "    pm.expect(jsonData.data.accessToken).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Regular User\",\n  \"email\": \"user@restaurant.com\",\n  \"password\": \"UserPassword123!\",\n  \"confirmPassword\": \"UserPassword123!\",\n  \"role\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Admin (Role: Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Returns Admin user object and Access Token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.user.role).to.eql('Admin');",
+                  "    if (jsonData.data.accessToken) {",
+                  "        pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -53,16 +149,21 @@
           }
         },
         {
-          "name": "Login Admin",
+          "name": "Login Admin (Auto-Save Token)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Auto-saves Access Token to collection variable', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.accessToken).to.be.a('string');",
                   "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
-                  "}"
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -89,6 +190,25 @@
         },
         {
           "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Updates Access Token variable', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.accessToken).to.be.a('string');",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -110,6 +230,24 @@
         },
         {
           "name": "Get Profile (/me)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns authenticated user profile', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.user.email).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
@@ -132,6 +270,23 @@
         },
         {
           "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Successfully logs out', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
@@ -155,19 +310,407 @@
       ]
     },
     {
-      "name": "File Upload Module",
+      "name": "3. Menu Management",
       "item": [
         {
-          "name": "Upload Image",
+          "name": "Create Menu Item (Admin)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.data && jsonData.data.path) {",
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Auto-saves Menu ID variable', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data._id).to.be.a('string');",
+                  "    pm.collectionVariables.set('menuId', jsonData.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Margherita Pizza",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Classic Italian pizza with fresh mozzarella, basil, and tomato sauce.",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "14.99",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "Mains",
+                  "type": "text"
+                },
+                {
+                  "key": "available",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"]
+            }
+          }
+        },
+        {
+          "name": "Get All Menu Items (Default)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns items list and pagination metadata', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.items).to.be.an('array');",
+                  "    pm.expect(jsonData.data.pagination).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"]
+            }
+          }
+        },
+        {
+          "name": "Search Menu Items (?search=pizza)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns search result array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.items).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu?search=pizza",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "pizza"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Menu Items (?category=Mains&available=true)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns filtered items', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.items).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu?category=Mains&available=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Mains"
+                },
+                {
+                  "key": "available",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sort Menu Items by Price (?sortBy=price:asc)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns sorted items list', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.items).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu?sortBy=price:asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "price:asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Paginate Menu Items (?page=1&limit=5)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Pagination metadata reflects limit=5', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.pagination.limit).to.eql(5);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu?page=1&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Menu Item by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns requested menu item object', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data._id).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu", "{{menuId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Menu Item (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Updates menu item attributes', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.price).to.eql(16.99);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Supreme Margherita Pizza",
+                  "type": "text"
+                },
+                {
+                  "key": "price",
+                  "value": "16.99",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/menu/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu", "{{menuId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Menu Item (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Deletes menu item', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/menu/{{menuId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["menu", "{{menuId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. File Upload",
+      "item": [
+        {
+          "name": "Upload Image File",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Auto-saves uploaded image path variable', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "    pm.expect(jsonData.data.path).to.be.a('string');",
                   "    pm.collectionVariables.set('uploadedImagePath', jsonData.data.path);",
-                  "}"
+                  "});"
                 ],
                 "type": "text/javascript"
               }
@@ -204,7 +747,24 @@
           }
         },
         {
-          "name": "Delete Image",
+          "name": "Delete Uploaded Image File",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Deletes uploaded image', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "auth": {
               "type": "bearer",
@@ -231,186 +791,6 @@
               "raw": "{{baseUrl}}/upload",
               "host": ["{{baseUrl}}"],
               "path": ["upload"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Menu Management",
-      "item": [
-        {
-          "name": "Create Menu Item (Admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.data && jsonData.data._id) {",
-                  "    pm.collectionVariables.set('menuId', jsonData.data._id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "name",
-                  "value": "Margherita Pizza",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "Classic Italian pizza topped with fresh mozzarella, ripe tomatoes, and fresh basil leaves.",
-                  "type": "text"
-                },
-                {
-                  "key": "price",
-                  "value": "14.99",
-                  "type": "text"
-                },
-                {
-                  "key": "category",
-                  "value": "Mains",
-                  "type": "text"
-                },
-                {
-                  "key": "available",
-                  "value": "true",
-                  "type": "text"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/menu",
-              "host": ["{{baseUrl}}"],
-              "path": ["menu"]
-            }
-          }
-        },
-        {
-          "name": "Get All Menu Items (Search, Filter, Sort, Paginate)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/menu?search=pizza&category=Mains&available=true&sortBy=price:asc&page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["menu"],
-              "query": [
-                {
-                  "key": "search",
-                  "value": "pizza"
-                },
-                {
-                  "key": "category",
-                  "value": "Mains"
-                },
-                {
-                  "key": "available",
-                  "value": "true"
-                },
-                {
-                  "key": "sortBy",
-                  "value": "price:asc"
-                },
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Get Single Menu Item",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/menu/{{menuId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["menu", "{{menuId}}"]
-            }
-          }
-        },
-        {
-          "name": "Update Menu Item (Admin)",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "price",
-                  "value": "16.99",
-                  "type": "text"
-                },
-                {
-                  "key": "available",
-                  "value": "true",
-                  "type": "text"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/menu/{{menuId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["menu", "{{menuId}}"]
-            }
-          }
-        },
-        {
-          "name": "Delete Menu Item (Admin)",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{accessToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/menu/{{menuId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["menu", "{{menuId}}"]
             }
           }
         }
