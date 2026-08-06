@@ -4,25 +4,25 @@ import { Layout } from '../components/common/Layout';
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
-// Lazy Loaded Pages
-const DashboardPage = lazy(() => import('../pages/DashboardPage'));
-const MenuPage = lazy(() => import('../pages/MenuPage'));
-const CategoriesPage = lazy(() => import('../pages/CategoriesPage'));
-const ProfilePage = lazy(() => import('../pages/ProfilePage'));
-const SettingsPage = lazy(() => import('../pages/SettingsPage'));
-const LoginPage = lazy(() => import('../pages/LoginPage'));
-const RegisterPage = lazy(() => import('../pages/RegisterPage'));
+// Lazy Loaded Domain Feature Modules
+const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
+const MenuPage = lazy(() => import('../features/menu/MenuPage'));
+const CategoriesPage = lazy(() => import('../features/categories/CategoriesPage'));
+const ProfilePage = lazy(() => import('../features/profile/ProfilePage'));
+const SettingsPage = lazy(() => import('../features/settings/SettingsPage'));
+const LoginPage = lazy(() => import('../features/auth/LoginPage'));
+const RegisterPage = lazy(() => import('../features/auth/RegisterPage'));
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'));
 
 export const AppRoutes = () => {
   return (
-    <Suspense fallback={<LoadingSpinner size="large" message="Loading page module..." />}>
+    <Suspense fallback={<LoadingSpinner size="large" message="Loading feature module..." />}>
       <Routes>
         {/* Auth Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Dashboard Protected Routes Wrapped in Main Layout */}
+        {/* Protected Feature Routes Wrapped in SaaS Layout */}
         <Route
           path="/"
           element={
