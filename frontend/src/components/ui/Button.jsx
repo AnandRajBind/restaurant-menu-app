@@ -15,10 +15,11 @@ export const Button = ({
   rightIcon: RightIcon,
   className = '',
   type = 'button',
+  'aria-label': ariaLabel,
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center font-semibold rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
     primary:
@@ -43,16 +44,18 @@ export const Button = ({
     <button
       type={type}
       disabled={disabled || isLoading}
+      aria-label={ariaLabel}
+      aria-disabled={disabled || isLoading}
       className={`${baseStyles} ${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${className}`}
       {...props}
     >
       {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
       ) : LeftIcon ? (
-        <LeftIcon className="w-4 h-4" />
+        <LeftIcon className="w-4 h-4" aria-hidden="true" />
       ) : null}
       <span>{children}</span>
-      {!isLoading && RightIcon ? <RightIcon className="w-4 h-4" /> : null}
+      {!isLoading && RightIcon ? <RightIcon className="w-4 h-4" aria-hidden="true" /> : null}
     </button>
   );
 };

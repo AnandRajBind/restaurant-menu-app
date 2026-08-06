@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
 import { Utensils, Sun, Moon, LogOut, User, Shield, Menu } from 'lucide-react';
 
-export const Header = ({ onToggleSidebar }) => {
+export const Header = ({ onToggleSidebar, isSidebarOpen = false }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -24,16 +24,18 @@ export const Header = ({ onToggleSidebar }) => {
             {onToggleSidebar && (
               <button
                 onClick={onToggleSidebar}
-                className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-colors"
-                aria-label="Toggle Sidebar"
+                aria-label="Toggle navigation drawer"
+                aria-expanded={isSidebarOpen}
+                aria-controls="mobile-sidebar"
+                className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5" aria-hidden="true" />
               </button>
             )}
 
-            <Link to="/" className="flex items-center space-x-3 group">
+            <Link to="/" aria-label="GourmetBite Dashboard Home" className="flex items-center space-x-3 group">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-primary-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-                <Utensils className="w-5 h-5" />
+                <Utensils className="w-5 h-5" aria-hidden="true" />
               </div>
               <div className="hidden sm:block">
                 <span className="font-heading text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -51,11 +53,15 @@ export const Header = ({ onToggleSidebar }) => {
             {/* Theme Switcher */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-              aria-label="Toggle Dark Mode"
+              className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500"
+              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >
-              {isDark ? <Sun className="w-4 h-4 text-accent-400" /> : <Moon className="w-4 h-4" />}
+              {isDark ? (
+                <Sun className="w-4 h-4 text-accent-400" aria-hidden="true" />
+              ) : (
+                <Moon className="w-4 h-4" aria-hidden="true" />
+              )}
             </button>
 
             {/* Auth Menu Dropdown */}
@@ -63,7 +69,10 @@ export const Header = ({ onToggleSidebar }) => {
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-800"
+                  aria-expanded={dropdownOpen}
+                  aria-haspopup="true"
+                  aria-label="User Account Menu"
+                  className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-800 focus-visible:ring-2 focus-visible:ring-primary-500"
                 >
                   <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-950 text-primary-700 dark:text-primary-400 font-bold text-xs flex items-center justify-center">
                     {user?.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -71,14 +80,18 @@ export const Header = ({ onToggleSidebar }) => {
                   <div className="text-left hidden sm:block">
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-1">{user?.name}</p>
                     <span className="inline-flex items-center text-[10px] font-semibold text-primary-600 dark:text-primary-400">
-                      <Shield className="w-2.5 h-2.5 mr-0.5" />
+                      <Shield className="w-2.5 h-2.5 mr-0.5" aria-hidden="true" />
                       {user?.role}
                     </span>
                   </div>
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 saas-card p-1 shadow-lg z-50 divide-y divide-slate-100 dark:divide-slate-800">
+                  <div
+                    role="menu"
+                    aria-orientation="vertical"
+                    className="absolute right-0 mt-2 w-48 saas-card p-1 shadow-lg z-50 divide-y divide-slate-100 dark:divide-slate-800"
+                  >
                     <div className="px-3 py-2">
                       <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user?.name}</p>
                       <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
@@ -86,19 +99,21 @@ export const Header = ({ onToggleSidebar }) => {
                     <div className="py-1">
                       <Link
                         to="/profile"
+                        role="menuitem"
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                       >
-                        <User className="w-3.5 h-3.5" />
+                        <User className="w-3.5 h-3.5" aria-hidden="true" />
                         <span>View Profile</span>
                       </Link>
                     </div>
                     <div className="pt-1">
                       <button
+                        role="menuitem"
                         onClick={handleLogout}
                         className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-lg transition-colors"
                       >
-                        <LogOut className="w-3.5 h-3.5" />
+                        <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
                         <span>Sign Out</span>
                       </button>
                     </div>

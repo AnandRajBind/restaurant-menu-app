@@ -16,6 +16,7 @@ export const Input = forwardRef(
     ref
   ) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+    const errorId = inputId ? `${inputId}-error` : undefined;
 
     return (
       <div className="space-y-1.5 w-full">
@@ -30,13 +31,15 @@ export const Input = forwardRef(
         <div className="relative">
           {LeftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <LeftIcon className="w-4 h-4" />
+              <LeftIcon className="w-4 h-4" aria-hidden="true" />
             </div>
           )}
           <input
             ref={ref}
             id={inputId}
             type={type}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
             className={`saas-input ${LeftIcon ? 'pl-10' : ''} ${
               RightIcon ? 'pr-10' : ''
             } ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
@@ -44,12 +47,14 @@ export const Input = forwardRef(
           />
           {RightIcon && (
             <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
-              <RightIcon className="w-4 h-4" />
+              <RightIcon className="w-4 h-4" aria-hidden="true" />
             </div>
           )}
         </div>
         {error ? (
-          <p className="text-xs text-red-500 font-medium mt-1">{error}</p>
+          <p id={errorId} className="text-xs text-red-500 font-medium mt-1">
+            {error}
+          </p>
         ) : helperText ? (
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{helperText}</p>
         ) : null}
