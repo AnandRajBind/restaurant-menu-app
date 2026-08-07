@@ -1,10 +1,11 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Layout } from '../components/common/Layout';
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 // Lazy Loaded Domain Feature Modules
+const LandingPage = lazy(() => import('../features/landing/LandingPage'));
 const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
 const MenuPage = lazy(() => import('../features/menu/MenuPage'));
 const CategoriesPage = lazy(() => import('../features/categories/CategoriesPage'));
@@ -18,23 +19,14 @@ export const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner size="large" message="Loading feature module..." />}>
       <Routes>
+        {/* Public Landing Page */}
+        <Route path="/" element={<LandingPage />} />
+
         {/* Auth Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Root Redirect Route */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <DashboardPage />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Dashboard Routes (General, Admin, and User explicit routes) */}
+        {/* Protected Dashboard Routes Wrapped in SaaS Layout */}
         <Route
           path="/dashboard"
           element={
@@ -66,7 +58,7 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* Other Feature Routes */}
+        {/* Other Protected Feature Routes */}
         <Route
           path="/menu"
           element={
