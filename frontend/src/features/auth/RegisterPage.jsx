@@ -33,7 +33,8 @@ export const RegisterPage = () => {
     const result = await registerAuth(data);
     setLoading(false);
     if (result.success) {
-      navigate('/', { replace: true });
+      const targetPath = data.role === 'Admin' ? '/admin/dashboard' : '/user/dashboard';
+      navigate(targetPath, { replace: true });
     }
   };
 

@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Utensils, Grid, User, Settings, Shield } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -16,13 +17,27 @@ export const Sidebar = ({ isOpen, onClose }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const dashboardPath = user?.role === 'Admin' ? '/admin/dashboard' : '/user/dashboard';
+
   const navigationItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: 'Dashboard', path: dashboardPath, icon: LayoutDashboard },
     { name: 'Menu Management', path: '/menu', icon: Utensils },
     { name: 'Categories', path: '/categories', icon: Grid },
     { name: 'My Profile', path: '/profile', icon: User },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
+
+  const isDashboardActive = (path) => {
+    if (path.includes('dashboard')) {
+      return (
+        location.pathname === '/' ||
+        location.pathname === '/dashboard' ||
+        location.pathname === '/admin/dashboard' ||
+        location.pathname === '/user/dashboard'
+      );
+    }
+    return location.pathname === path;
+  };
 
   return (
     <>
@@ -53,15 +68,16 @@ export const Sidebar = ({ isOpen, onClose }) => {
               <nav className="space-y-1" aria-label="Main Navigation Links">
                 {navigationItems.map((item) => {
                   const Icon = item.icon;
+                  const active = isDashboardActive(item.path);
+
                   return (
                     <NavLink
                       key={item.path}
                       to={item.path}
                       onClick={onClose}
-                      end={item.path === '/'}
-                      className={({ isActive }) =>
+                      className={
                         `flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 ${
-                          isActive
+                          active
                             ? 'bg-primary-50 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400'
                             : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-100'
                         }`
@@ -96,3 +112,5 @@ export const Sidebar = ({ isOpen, onClose }) => {
     </>
   );
 };
+
+export default Sidebar;

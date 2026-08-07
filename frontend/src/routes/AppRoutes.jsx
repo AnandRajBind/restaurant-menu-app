@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from '../components/common/Layout';
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -22,7 +22,7 @@ export const AppRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected Feature Routes Wrapped in SaaS Layout */}
+        {/* Root Redirect Route */}
         <Route
           path="/"
           element={
@@ -33,6 +33,8 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Dashboard Routes (General, Admin, and User explicit routes) */}
         <Route
           path="/dashboard"
           element={
@@ -43,6 +45,28 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <DashboardPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user/dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <DashboardPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Other Feature Routes */}
         <Route
           path="/menu"
           element={

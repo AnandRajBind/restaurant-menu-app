@@ -9,13 +9,13 @@ import { Checkbox } from '../../components/ui/Checkbox';
 import { Utensils, Mail, Lock, LogIn, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 
 export const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname;
 
   const {
     register,
@@ -46,7 +46,8 @@ export const LoginPage = () => {
     );
     setLoading(false);
     if (result.success) {
-      navigate(from, { replace: true });
+      const targetPath = from || (data.email.includes('admin') ? '/admin/dashboard' : '/user/dashboard');
+      navigate(targetPath, { replace: true });
     }
   };
 
