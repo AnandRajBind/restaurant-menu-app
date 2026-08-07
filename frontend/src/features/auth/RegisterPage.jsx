@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
-import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { UserPlus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 
@@ -20,11 +19,7 @@ export const RegisterPage = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      role: 'User',
-    },
-  });
+  } = useForm();
 
   const password = watch('password');
 
@@ -33,8 +28,7 @@ export const RegisterPage = () => {
     const result = await registerAuth(data);
     setLoading(false);
     if (result.success) {
-      const targetPath = data.role === 'Admin' ? '/admin/dashboard' : '/user/dashboard';
-      navigate(targetPath, { replace: true });
+      navigate('/user/dashboard', { replace: true });
     }
   };
 
@@ -49,7 +43,7 @@ export const RegisterPage = () => {
             Create Account
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Register to manage or view restaurant menu catalog
+            Register to browse restaurant menu catalog and stock availability
           </p>
         </div>
 
@@ -127,15 +121,6 @@ export const RegisterPage = () => {
               validate: (val) => val === password || 'Passwords do not match',
             })}
             error={errors.confirmPassword?.message}
-          />
-
-          <Select
-            label="Account Role"
-            options={[
-              { label: 'Regular Staff (User)', value: 'User' },
-              { label: 'Restaurant Manager (Admin)', value: 'Admin' },
-            ]}
-            {...register('role')}
           />
 
           <Button type="submit" variant="primary" className="w-full" isLoading={loading} leftIcon={UserPlus}>

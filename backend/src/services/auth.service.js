@@ -1,6 +1,7 @@
 import { User } from '../models/user.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { HTTP_STATUS } from '../constants/httpStatus.js';
+import { ROLES } from '../constants/roles.js';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -10,11 +11,12 @@ import {
 class AuthService {
   /**
    * Registers a new user in the system.
-   * @param {object} userData - { name, email, password, role }
+   * Public registration always enforces 'User' role to prevent unauthorized Admin creation.
+   * @param {object} userData - { name, email, password }
    * @returns {Promise<{user: object, accessToken: string, refreshToken: string}>}
    */
   async registerUser(userData) {
-    const { name, email, password, role } = userData;
+    const { name, email, password } = userData;
 
     // 1. Check if user with given email already exists
     const existingUser = await User.findOne({ email });
@@ -25,12 +27,12 @@ class AuthService {
       );
     }
 
-    // 2. Create new user document
+    // 2. Create new user document (Role is strictly forced to 'User')
     const user = await User.create({
       name,
       email,
       password,
-      role: role || undefined, // Defaults to 'User' if not specified
+      role: ROLES.USER,
     });
 
     // 3. Generate Access & Refresh tokens
