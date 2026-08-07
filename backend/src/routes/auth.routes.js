@@ -65,7 +65,7 @@ const router = Router();
  * /auth/register:
  *   post:
  *     summary: Register a new user
- *     description: Creates a new user account with validated credentials and returns access token & sets HTTP-only refresh cookie.
+ *     description: Public registration always creates a User account. Admin accounts are created only through the Seed Script (npm run seed).
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -87,10 +87,6 @@ const router = Router();
  *               confirmPassword:
  *                 type: string
  *                 example: "Password123!"
- *               role:
- *                 type: string
- *                 enum: [Admin, User]
- *                 example: "User"
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -139,10 +135,10 @@ router.post('/register', registerValidator, validate, authController.register);
  *             properties:
  *               email:
  *                 type: string
- *                 example: "john@example.com"
+ *                 example: "admin@gmail.com"
  *               password:
  *                 type: string
- *                 example: "Password123!"
+ *                 example: "Admin@123"
  *     responses:
  *       200:
  *         description: User authenticated successfully
@@ -157,9 +153,9 @@ router.post('/register', registerValidator, validate, authController.register);
  *               data:
  *                 user:
  *                   _id: "64b8f1a2c9e4a80012a3b4c5"
- *                   name: "John Doe"
- *                   email: "john@example.com"
- *                   role: "User"
+ *                   name: "System Administrator"
+ *                   email: "admin@gmail.com"
+ *                   role: "Admin"
  *                   createdAt: "2026-08-06T00:00:00.000Z"
  *                   updatedAt: "2026-08-06T00:00:00.000Z"
  *                 accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -261,9 +257,9 @@ router.post('/logout', authenticate, authController.logout);
  *               data:
  *                 user:
  *                   _id: "64b8f1a2c9e4a80012a3b4c5"
- *                   name: "John Doe"
- *                   email: "john@example.com"
- *                   role: "User"
+ *                   name: "System Administrator"
+ *                   email: "admin@gmail.com"
+ *                   role: "Admin"
  *                   createdAt: "2026-08-06T00:00:00.000Z"
  *                   updatedAt: "2026-08-06T00:00:00.000Z"
  *       401:

@@ -67,7 +67,7 @@
       "name": "2. Authentication",
       "item": [
         {
-          "name": "Register User (Role: User)",
+          "name": "Register User (Role Assigned Automatically by Server)",
           "event": [
             {
               "listen": "test",
@@ -76,7 +76,7 @@
                   "pm.test('Status code is 201 Created', function () {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "pm.test('Returns User object and Access Token', function () {",
+                  "pm.test('Returns User object with role User and Access Token', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.eql(true);",
                   "    pm.expect(jsonData.data.user.role).to.eql('User');",
@@ -88,6 +88,7 @@
             }
           ],
           "request": {
+            "description": "Public registration always assigns role = 'User'. Client-side role values are ignored by the backend.",
             "method": "POST",
             "header": [
               {
@@ -97,7 +98,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Regular User\",\n  \"email\": \"user@restaurant.com\",\n  \"password\": \"UserPassword123!\",\n  \"confirmPassword\": \"UserPassword123!\",\n  \"role\": \"User\"\n}"
+              "raw": "{\n  \"name\": \"Regular User\",\n  \"email\": \"user@restaurant.com\",\n  \"password\": \"UserPassword123!\",\n  \"confirmPassword\": \"UserPassword123!\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -107,7 +108,7 @@
           }
         },
         {
-          "name": "Register Admin (Role: Admin)",
+          "name": "Attempt Admin Role Override via Register (Security Check)",
           "event": [
             {
               "listen": "test",
@@ -116,13 +117,10 @@
                   "pm.test('Status code is 201 Created', function () {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "pm.test('Returns Admin user object and Access Token', function () {",
+                  "pm.test('Backend ignores role Admin and forces role User', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.success).to.eql(true);",
-                  "    pm.expect(jsonData.data.user.role).to.eql('Admin');",
-                  "    if (jsonData.data.accessToken) {",
-                  "        pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
-                  "    }",
+                  "    pm.expect(jsonData.data.user.role).to.eql('User');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -130,6 +128,7 @@
             }
           ],
           "request": {
+            "description": "Verifies security constraint: sending role=Admin in request body is ignored and saved as User.",
             "method": "POST",
             "header": [
               {
@@ -139,7 +138,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@restaurant.com\",\n  \"password\": \"AdminPassword123!\",\n  \"confirmPassword\": \"AdminPassword123!\",\n  \"role\": \"Admin\"\n}"
+              "raw": "{\n  \"name\": \"Security Test User\",\n  \"email\": \"securitytest@restaurant.com\",\n  \"password\": \"UserPassword123!\",\n  \"confirmPassword\": \"UserPassword123!\",\n  \"role\": \"Admin\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -179,7 +178,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@restaurant.com\",\n  \"password\": \"AdminPassword123!\"\n}"
+              "raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"password\": \"Admin@123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",

@@ -1,8 +1,8 @@
 import { body } from 'express-validator';
-import { ROLE_VALUES } from '../constants/roles.js';
 
 /**
  * User Registration Request Validator Schema
+ * Role is strictly handled by the server ('User') and is not accepted in public payloads.
  */
 export const registerValidator = [
   body('name')
@@ -43,11 +43,6 @@ export const registerValidator = [
       }
       return true;
     }),
-
-  body('role')
-    .optional()
-    .isIn(ROLE_VALUES)
-    .withMessage(`Role must be one of: ${ROLE_VALUES.join(', ')}`),
 ];
 
 /**
